@@ -12,5 +12,5 @@ achievements:
         category: default
         stat: totalblockplace
         value: 25
-        message: {}
+        message: ''
         rewards: {}

@@ -42,6 +42,10 @@ public class PlayerStat {
 			return false;
 	}
 	
+	public Player getPlayer() {
+		return this.player;
+	}
+	
 	public Category get(String name) {
 		return categories.get(name);
 	}
@@ -71,18 +75,17 @@ public class PlayerStat {
 					} catch (SQLException e) {
 						e.printStackTrace();
 					} finally {
-						if (ps != null) {
-							try {
-								if (conn != null)
-									conn.close();
-								if (ps != null)
-									ps.close();
-							} catch (SQLException e) {
-								e.printStackTrace();
-							}
+						try {
+							if (conn != null)
+								conn.close();
+							if (ps != null)
+								ps.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
 						}
 					}
 				}
+				cat.setModified(false);
 			}
 		}
 	}

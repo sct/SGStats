@@ -78,4 +78,8 @@ public class StatUtils {
 		
 		return null;
 	}
+	
+	public static String replaceColors(String replace) {
+		return replace.replaceAll("(?i)&([a-f0-9])", "\u00A7$1");
+	}
 }

@@ -1,2 +1,7 @@
 default:
     use-mysql: false
+achievements:
+    enabled: true
+    broadcast: true
+    message: '&5[&6Achievement Earned&5] &c#name#&6! #message#'
+    broadcast-message: '&5[&6Achievements&5] &c#player# &6just earned the achievement &5#name#&5!'

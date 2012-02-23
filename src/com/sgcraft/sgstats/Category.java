@@ -38,6 +38,10 @@ public class Category {
 		put(stat, value);
 	}
 	
+	public void setModified(Boolean modified) {
+		this.modified = modified;
+	}
+	
 	public void add(String stat, Integer value) {
 		if (!stats.containsKey(stat)) {
 			put(stat,value);

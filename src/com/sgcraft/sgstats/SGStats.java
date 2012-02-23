@@ -25,6 +25,7 @@ import com.sgcraft.sgstats.listeners.BlockListener;
 import com.sgcraft.sgstats.listeners.EntityListener;
 import com.sgcraft.sgstats.listeners.PlayerListener;
 import com.sgcraft.sgstats.util.DeathDetail.DeathEventType;
+import com.sgcraft.sgstats.util.StatUtils;
 
 public class SGStats extends JavaPlugin {
 	public static SGStats plugin;
@@ -70,6 +71,7 @@ public class SGStats extends JavaPlugin {
 			}
 			
 			aConfig.options().copyDefaults(true);
+			aConfig.save(aConfigFile);
 			
 			ConfigurationSection aSec = aConfig.getConfigurationSection("achievements");
 			Achievement achievement = null;
@@ -157,7 +159,7 @@ public class SGStats extends JavaPlugin {
 	}
 	
 	public void updateStat(String player,Achievement achieve) {
-		updateStat(player,"achivements",achieve.getName(),1);
+		updateStat(player,"achievements",achieve.getName(),1);
 	}
 	
 	public void updateStat(String pName,String stat,String key,Integer value) {
@@ -179,7 +181,7 @@ public class SGStats extends JavaPlugin {
 			aCat = ps.get("achievements");
 		Achievement achievement = checkAchievements(aCat,stat,key,newValue);
 		if (achievement != null)
-			updateStat(pName,achievement);
+			grantAchievement(ps,achievement);
 	}
 	
 	public Achievement checkAchievements(Category cat,String cName, String key, Integer value) {
@@ -195,6 +197,29 @@ public class SGStats extends JavaPlugin {
 		}
 		
 		return null;
+	}
+	
+	public void grantAchievement(PlayerStat ps, Achievement ach) {
+		String cMessage = config.getString("achievements.message");
+		Boolean broadcast = config.getBoolean("achievements.broadcast");
+		
+		String newMessage = cMessage.replace("#name#", ach.getFriendlyName());
+		if (ach.getMessage() != null)
+			newMessage = newMessage.replace("#message#", ach.getMessage());
+		else
+			newMessage = newMessage.replace("#message#", "");
+		
+		ps.getPlayer().sendMessage(StatUtils.replaceColors(newMessage));
+		
+		if (broadcast == true) {
+			String broadcastMessage = config.getString("achievements.broadcast-message");
+			broadcastMessage = broadcastMessage.replace("#player#",ps.getPlayer().getName());
+			broadcastMessage = broadcastMessage.replace("#name#", ach.getFriendlyName());
+			getServer().broadcastMessage(StatUtils.replaceColors(broadcastMessage));
+		}
+		
+		updateStat(ps.getPlayer().getName(),ach);
+		ps.save();
 	}
 	
 	
