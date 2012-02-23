@@ -24,6 +24,7 @@ public class SGStats extends JavaPlugin {
 	public static SGStats plugin;
 	public final Logger log = Logger.getLogger("Minecraft");
 	public static HashMap<String,PlayerStat> stats = new HashMap<String,PlayerStat>();
+	public static HashMap<String,Achievement> achievements = new HashMap<String,Achievement>();
 	public static FileConfiguration config;
 	public static String defaultCategory = "default";
 	public static Boolean debugMode = true;
@@ -112,14 +113,28 @@ public class SGStats extends JavaPlugin {
 		cat.add(key, value);
 		if (debugMode)
 			log.info("[SGStats] [DEBUG] Stat Updated! Player: " + pName + " Cat: " + stat + " Key: " + key + " Value: " + value);
+		
+		Achievement achievement = null;
+		
+		for (String aName : achievements.keySet()) {
+			achievement = achievements.get(aName);
+			if (achievement.getCategory().equalsIgnoreCase(stat) && achievement.getStat().equalsIgnoreCase(key) && achievement.getValue() >= value) {
+				// Give out achievement
+			}
+		}
 	}
+	/*
+	public Achievement checkAchievements(String cName, String key, Integer value) {
+		
+	}
+	*/
 	
-	public Integer get(String pName,String stat,String key) {
+	public Integer get(String pName,String cName,String key) {
 		if (!stats.containsKey(pName))
 			return 0;
 		
 		PlayerStat ps = stats.get(pName);
-		Category cat = ps.get(stat);
+		Category cat = ps.get(cName);
 		if (cat == null)
 			return 0;
 		return cat.get(key);

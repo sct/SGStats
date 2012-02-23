@@ -39,6 +39,10 @@ public class Achievement {
 		return;
 	}
 	
+	public void addReward(Integer itemId, Integer value) {
+		rewards.add(new Reward(false,itemId,value));
+	}
+	
 	public String getName() {
 		return this.name;
 	}
