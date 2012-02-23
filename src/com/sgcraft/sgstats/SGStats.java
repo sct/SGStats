@@ -1,15 +1,21 @@
 package com.sgcraft.sgstats;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 import lib.PatPeter.SQLibrary.SQLite;
 
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,6 +32,8 @@ public class SGStats extends JavaPlugin {
 	public static HashMap<String,PlayerStat> stats = new HashMap<String,PlayerStat>();
 	public static HashMap<String,Achievement> achievements = new HashMap<String,Achievement>();
 	public static FileConfiguration config;
+	public static FileConfiguration aConfig;
+	static File aConfigFile = null;
 	public static String defaultCategory = "default";
 	public static Boolean debugMode = true;
 	public static SQLite sql;
@@ -35,7 +43,7 @@ public class SGStats extends JavaPlugin {
 		Connection conn = null;
 		PreparedStatement ps = null;
 		if (!config.getBoolean("default.use-mysql")) {
-			sql = new SQLite(log, "[ " + pdf.getName() + "]", "titles", getDataFolder().getPath());
+			sql = new SQLite(log, "[ " + pdf.getName() + "]", "stats", getDataFolder().getPath());
 			conn = sql.getConnection();
 			try {
 				ps = conn.prepareStatement("CREATE TABLE if not exists player_stats (player TEXT NOT NULL,category TEXT NOT NULL,stat TEXT NOT NULL DEFAULT '-',value INTEGER NOT NULL DEFAULT 0);");
@@ -45,6 +53,51 @@ public class SGStats extends JavaPlugin {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	public void addAchievements() {
+		try {
+			aConfigFile = new File(this.getDataFolder(),"achievements.yml");
+			if (!aConfigFile.exists())
+				aConfigFile.createNewFile();
+			
+			aConfig = YamlConfiguration.loadConfiguration(aConfigFile);
+			InputStream defConfigStream = getResource("achievements.yml");
+			if (defConfigStream != null) {
+				YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+				aConfig.setDefaults(defConfig);
+			}
+			
+			aConfig.options().copyDefaults(true);
+			
+			ConfigurationSection aSec = aConfig.getConfigurationSection("achievements");
+			Achievement achievement = null;
+			for (String aName : aSec.getKeys(false)) {
+				String aFriendly = aSec.getString(aName + ".friendly-name");
+				String aCat = aSec.getString(aName + ".category");
+				String aStat = aSec.getString(aName + ".stat");
+				Integer aValue = aSec.getInt(aName + ".value");
+				String aMessage = aSec.getString(aName + ".message");
+				if (aMessage.isEmpty())
+					achievement = new Achievement(aName,aFriendly,aCat,aStat,aValue);
+				else
+					achievement = new Achievement(aName,aFriendly,aCat,aStat,aValue,aMessage);
+				
+				List<String> rewards = aConfig.getStringList(aName + ".rewards");
+				
+				for (String reward : rewards) {
+					String[] args = reward.split(":");
+					if (args[0] == "false")
+						achievement.addReward(Integer.valueOf(args[1]), Integer.valueOf(args[2]));
+					else
+						achievement.addReward(true, Integer.valueOf(args[2]));
+				}
+				achievements.put(aName, achievement);
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -64,6 +117,7 @@ public class SGStats extends JavaPlugin {
 		configDatabase();
 		startListeners();
 		addCommands();
+		addAchievements();
 		
 		log.info("[" + pdf.getName() + "] v" + pdf.getVersion() + " is now enabled!");
 	}
@@ -102,6 +156,10 @@ public class SGStats extends JavaPlugin {
 		updateStat(player.getName(),stat,block.getType().toString(),1);
 	}
 	
+	public void updateStat(String player,Achievement achieve) {
+		updateStat(player,"achivements",achieve.getName(),1);
+	}
+	
 	public void updateStat(String pName,String stat,String key,Integer value) {
 		if (!stats.containsKey(pName))
 			return;
@@ -111,23 +169,34 @@ public class SGStats extends JavaPlugin {
 		if (cat == null)
 			cat = ps.newCategory(stat);
 		cat.add(key, value);
-		if (debugMode)
+		Integer newValue = cat.get(key);
+		if (debugMode == true)
 			log.info("[SGStats] [DEBUG] Stat Updated! Player: " + pName + " Cat: " + stat + " Key: " + key + " Value: " + value);
 		
+		// Get current achievements
+		Category aCat = null;
+		if (ps.contains("achievements"))
+			aCat = ps.get("achievements");
+		Achievement achievement = checkAchievements(aCat,stat,key,newValue);
+		if (achievement != null)
+			updateStat(pName,achievement);
+	}
+	
+	public Achievement checkAchievements(Category cat,String cName, String key, Integer value) {
 		Achievement achievement = null;
-		
 		for (String aName : achievements.keySet()) {
 			achievement = achievements.get(aName);
-			if (achievement.getCategory().equalsIgnoreCase(stat) && achievement.getStat().equalsIgnoreCase(key) && achievement.getValue() >= value) {
-				// Give out achievement
+			if (achievement.getCategory().equalsIgnoreCase(cName) && achievement.getStat().equalsIgnoreCase(key) && value >= achievement.getValue() 
+					&& (cat == null || !cat.contains(achievement.getName()))) {
+				if (debugMode == true)
+					log.info("[SGStats] [Debug] Achievement detected! Name: " + achievement.getName());
+				return achievement;
 			}
 		}
-	}
-	/*
-	public Achievement checkAchievements(String cName, String key, Integer value) {
 		
+		return null;
 	}
-	*/
+	
 	
 	public Integer get(String pName,String cName,String key) {
 		if (!stats.containsKey(pName))

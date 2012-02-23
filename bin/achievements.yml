@@ -1,0 +1,16 @@
+achievements:
+    break100blocks:
+        friendly-name: Block Breaker
+        category: default
+        stat: totalblockdestroy
+        value: 100
+        message: Crazy!
+        rewards:
+        - true:0:100
+    place25blocks:
+        friendly-name: Builder
+        category: default
+        stat: totalblockplace
+        value: 25
+        message: {}
+        rewards: {}
