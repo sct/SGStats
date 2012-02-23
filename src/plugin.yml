@@ -1,0 +1,8 @@
+name: SGStats
+main: com.sgcraft.sgstats.SGStats
+author: SGCraft
+version: 0.1
+commands:
+  stats:
+    description: View stats and configure
+    usage: /<command> <help>
