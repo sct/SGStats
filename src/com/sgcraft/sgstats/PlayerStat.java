@@ -29,6 +29,13 @@ public class PlayerStat {
 		cat.put(stat, value);
 	}
 	
+	public Boolean contains(String name) {
+		if (categories.containsKey(name))
+			return true;
+		else
+			return false;
+	}
+	
 	public Category get(String name) {
 		return categories.get(name);
 	}

@@ -13,6 +13,13 @@ public class Category {
 		return stats.keySet();
 	}
 	
+	public Boolean contains(String stat) {
+		if (stats.containsKey(stat))
+			return true;
+		else
+			return false;
+	}
+	
 	public int get(String stat) {
 		int value = stats.get(stat);
 		return value;

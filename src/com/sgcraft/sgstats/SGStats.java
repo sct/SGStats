@@ -12,6 +12,7 @@ import com.sgcraft.sgstats.commands.StatCommands;
 import com.sgcraft.sgstats.listeners.BlockListener;
 import com.sgcraft.sgstats.listeners.EntityListener;
 import com.sgcraft.sgstats.listeners.PlayerListener;
+import com.sgcraft.sgstats.util.DeathDetail.DeathEventType;
 
 public class SGStats extends JavaPlugin {
 	public static SGStats plugin;
@@ -53,6 +54,14 @@ public class SGStats extends JavaPlugin {
 	
 	public void updateStat(Player player,String stat,Integer num) {
 		updateStat(player.getName(),defaultCategory,stat,num);
+	}
+	
+	public void updateStat(Player player,String stat,DeathEventType det) {
+		updateStat(player,stat,det,1);
+	}
+	
+	public void updateStat(Player player,String stat,DeathEventType det,Integer val) {
+		updateStat(player.getName(),stat,det.toString(),val);
 	}
 	
 	public void updateStat(Player player,String stat,Block block) {

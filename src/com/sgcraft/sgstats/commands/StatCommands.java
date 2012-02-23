@@ -29,6 +29,25 @@ public class StatCommands implements CommandExecutor {
 			sender.sendMessage("[debug] total destroyed: " + defCat.get("totalblockdestroy"));
 			return true;
 		}
+		
+		if (args[0].equalsIgnoreCase("killstats")) {
+			PlayerStat ps = SGStats.stats.get(sender.getName());
+			if (ps.contains("kill")) {
+				Category cat = ps.get("kill");
+				for (String key : cat.getEntries()) {
+					sender.sendMessage("[debug] type: " + key + " count: " + cat.get(key));
+				}
+			}
+			if (ps.contains("default")) {
+				Category defCat = ps.get("default");
+				if (defCat.contains("totalkill"))
+					sender.sendMessage("[debug] total kills: " + defCat.get("totalkill"));
+				if (defCat.contains("totaldeath"))
+					sender.sendMessage("[debug] total deaths: " + defCat.get("totaldeath"));
+			}
+			
+			return true;
+		}
 		return false;
 	}
 

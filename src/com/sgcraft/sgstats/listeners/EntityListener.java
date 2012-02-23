@@ -22,16 +22,21 @@ public class EntityListener implements Listener {
 		if (dd.getDeathType() != null && dd.getDeathType().equals(DeathEventType.PVP)) {
 			Player player = dd.getPlayer();
 			Player killer = dd.getKiller();
+			plugin.updateStat(player, "totaldeath");
+			plugin.updateStat(killer, "kill",dd.getDeathType());
 			plugin.getServer().broadcastMessage(player.getName() + " was killed by " + killer.getName());
 			return;
 		}
 		if (dd.getPlayer() != null) {
+			plugin.updateStat(dd.getPlayer(), "totaldeath");
 			plugin.getServer().broadcastMessage("aw shucks, a player died!");
 			return;
 		}
 		
 		if (dd.isCreature()) {
 			Player killer = dd.getKiller();
+			plugin.updateStat(killer,"kill",dd.getDeathType());
+			plugin.updateStat(killer,"totalkill");
 			plugin.getServer().broadcastMessage(killer.getName() + " just killed a " + dd.getDeathType().toString());
 		}
 		
