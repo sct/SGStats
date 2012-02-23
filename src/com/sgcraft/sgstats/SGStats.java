@@ -1,9 +1,15 @@
 package com.sgcraft.sgstats;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import lib.PatPeter.SQLibrary.SQLite;
+
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,8 +24,28 @@ public class SGStats extends JavaPlugin {
 	public static SGStats plugin;
 	public final Logger log = Logger.getLogger("Minecraft");
 	public static HashMap<String,PlayerStat> stats = new HashMap<String,PlayerStat>();
+	public static FileConfiguration config;
 	public static String defaultCategory = "default";
 	public static Boolean debugMode = true;
+	public static SQLite sql;
+	
+	public void configDatabase() {
+		PluginDescriptionFile pdf = this.getDescription();
+		Connection conn = null;
+		PreparedStatement ps = null;
+		if (!config.getBoolean("default.use-mysql")) {
+			sql = new SQLite(log, "[ " + pdf.getName() + "]", "titles", getDataFolder().getPath());
+			conn = sql.getConnection();
+			try {
+				ps = conn.prepareStatement("CREATE TABLE if not exists player_stats (player TEXT NOT NULL,category TEXT NOT NULL,stat TEXT NOT NULL DEFAULT '-',value INTEGER NOT NULL DEFAULT 0);");
+				ps.executeUpdate();
+				ps.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	@Override
 	public void onDisable() {
@@ -31,7 +57,10 @@ public class SGStats extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		PluginDescriptionFile pdf = this.getDescription();
-		
+		config = getConfig();
+        config.options().copyDefaults(true);
+		saveConfig();
+		configDatabase();
 		startListeners();
 		addCommands();
 		
@@ -102,9 +131,16 @@ public class SGStats extends JavaPlugin {
 			return;
 		}
 		PlayerStat ps = new PlayerStat(player);
+		ps.load();
 		stats.put(player.getName(), ps);
 		if (debugMode)
 			log.info("[SGStats] [DEBUG] Player Loaded: " + player.getName());
+	}
+	
+	public void save(Player player) {
+		PlayerStat ps = stats.get(player.getName());
+		ps.save();
+		stats.remove(player.getName());
 	}
 	
 	public void LogError(String error) {

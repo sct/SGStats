@@ -20,6 +20,10 @@ public class Category {
 			return false;
 	}
 	
+	public Boolean isModified() {
+		return this.modified;
+	}
+	
 	public int get(String stat) {
 		int value = stats.get(stat);
 		return value;
