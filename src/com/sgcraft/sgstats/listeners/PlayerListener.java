@@ -38,6 +38,6 @@ public class PlayerListener implements Listener {
 	
 	@EventHandler()
 	public void onPlayerQuit (PlayerQuitEvent event) {
-		plugin.save(event.getPlayer());
+		plugin.unload(event.getPlayer());
 	}
 }

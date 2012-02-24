@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import lib.PatPeter.SQLibrary.SQLite;
-
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -42,6 +40,7 @@ import com.sgcraft.sgstats.listeners.BlockListener;
 import com.sgcraft.sgstats.listeners.EntityListener;
 import com.sgcraft.sgstats.listeners.PlayerListener;
 import com.sgcraft.sgstats.util.DeathDetail.DeathEventType;
+import com.sgcraft.sgstats.util.PrepareSQL;
 import com.sgcraft.sgstats.util.StatUtils;
 
 public class SGStats extends JavaPlugin {
@@ -54,26 +53,24 @@ public class SGStats extends JavaPlugin {
 	static File aConfigFile = null;
 	public static String defaultCategory = "default";
 	public static Boolean debugMode = true;
-	public static SQLite sql;
+	public static PrepareSQL sql;
 	private static Integer interval = 300;
 	
 	public void configDatabase() {
-		PluginDescriptionFile pdf = this.getDescription();
 		Connection conn = null;
 		PreparedStatement ps = null;
-		if (!config.getBoolean("default.use-mysql")) {
-			sql = new SQLite(log, "[ " + pdf.getName() + "]", "stats", getDataFolder().getPath());
-			conn = sql.getConnection();
-			try {
+		sql = new PrepareSQL(this,config.getBoolean("default.use-mysql"));
+		conn = sql.getConnection();
+		try {
+			if (PrepareSQL.isMysql())
+				ps = conn.prepareStatement("CREATE TABLE if not exists player_stats (player VARCHAR(255) NOT NULL,category VARCHAR(255) NOT NULL,stat VARCHAR(255) NOT NULL DEFAULT '-',value INT(11) NOT NULL DEFAULT 0);");
+			else
 				ps = conn.prepareStatement("CREATE TABLE if not exists player_stats (player TEXT NOT NULL,category TEXT NOT NULL,stat TEXT NOT NULL DEFAULT '-',value INTEGER NOT NULL DEFAULT 0);");
-				ps.executeUpdate();
-				ps.close();
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		} else {
-			// Want MySQL connector here, but should also be using sql var. Cant though, because its from the MySQL object :(
+			ps.executeUpdate();
+			ps.close();
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -128,7 +125,7 @@ public class SGStats extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		PluginDescriptionFile pdf = this.getDescription();
-		// TODO: Write plugin unloader
+		saveTask(true);
 		log.info("[" + pdf.getName() + "] is now disabled!");
 	}
 	
@@ -142,7 +139,7 @@ public class SGStats extends JavaPlugin {
 		startListeners();
 		addCommands();
 		addAchievements();
-		
+		startScheduler();
 		log.info("[" + pdf.getName() + "] v" + pdf.getVersion() + " is now enabled!");
 	}
 	
@@ -159,18 +156,27 @@ public class SGStats extends JavaPlugin {
 	public void startScheduler() {
 		getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
 			public void run() {
-				Integer count = 0;
-				if (debugMode == true)
-					log.info("[SGStats] [DEBUG] Save task started...");
-				for (String pName : stats.keySet()) {
-					PlayerStat ps = stats.get(pName);
-					ps.save();
-					count++;
-				}
-				if (debugMode == true)
-					log.info("[SGStats] [DEBUG] Save task finished. Saved " + count + " stats instances.");
+				saveTask();
 			}
 		}, 300 * 20, interval * 20);
+	}
+	
+	public void saveTask() {
+		saveTask(false);
+	}
+	
+	public void saveTask(Boolean unload) {
+		Integer count = 0;
+		if (debugMode == true)
+			log.info("[SGStats] [DEBUG] Save task started...");
+		for (String pName : stats.keySet()) {
+			PlayerStat ps = stats.get(pName);
+			if (unload)
+				unload(ps.getPlayer());
+			count++;
+		}
+		if (debugMode == true)
+			log.info("[SGStats] [DEBUG] Save task finished. Saved " + count + " stats instances.");
 	}
 	
 	public void updateStat(Player player,String stat) {
@@ -285,10 +291,12 @@ public class SGStats extends JavaPlugin {
 			log.info("[SGStats] [DEBUG] Player Loaded: " + player.getName());
 	}
 	
-	public void save(Player player) {
-		PlayerStat ps = stats.get(player.getName());
-		ps.save();
-		stats.remove(player.getName());
+	public void unload(Player player) {
+		if (stats.containsKey(player.getName())) {
+			PlayerStat ps = stats.get(player.getName());
+			ps.save();
+			stats.remove(player.getName());
+		}
 	}
 	
 	public void LogError(String error) {

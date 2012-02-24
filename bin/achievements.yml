@@ -5,6 +5,7 @@ achievements:
         category: default
         stat: totalblockdestroy
         value: 100
+        hidden: false
         message: Crazy!
         rewards:
         - true:0:100
@@ -14,5 +15,6 @@ achievements:
         category: default
         stat: totalblockplace
         value: 25
+        hidden: false
         message: ''
         rewards: {}

@@ -1,5 +1,10 @@
 default:
     use-mysql: false
+    mysql-hostname: localhost
+    mysql-port: 3306
+    mysql-database: minecraft
+    mysql-username: root
+    mysql-password: root
 achievements:
     enabled: true
     broadcast: true
