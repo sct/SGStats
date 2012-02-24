@@ -74,6 +74,14 @@ public class SGStats extends JavaPlugin {
 		}
 	}
 	
+	public void addAchievements(Boolean clear) {
+		if (clear == true) {
+			achievements.clear();
+			addAchievements();
+		} else
+			addAchievements();
+	}
+	
 	public void addAchievements() {
 		try {
 			aConfigFile = new File(this.getDataFolder(),"achievements.yml");
@@ -141,6 +149,13 @@ public class SGStats extends JavaPlugin {
 		addAchievements();
 		startScheduler();
 		log.info("[" + pdf.getName() + "] v" + pdf.getVersion() + " is now enabled!");
+	}
+	
+	public void reload() {
+		reloadConfig();
+		config = getConfig();
+		addAchievements(true);
+		log.info("[SGStats] Config Reloaded!");
 	}
 	
 	private void addCommands() {
