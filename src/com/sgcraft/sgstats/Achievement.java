@@ -23,27 +23,33 @@ import java.util.List;
 public class Achievement {
 	private String name = null;
 	private String friendlyName = null;
+	private String description = null;
 	private String category = null;
 	private String stat = null;
 	private Integer value = 0;
+	private Boolean hidden = false;
 	private String message = null;
 	private List<Reward> rewards = new ArrayList<Reward>();
 	
-	public Achievement (String name, String friendlyName, String category, String stat, Integer value, String message) {
+	public Achievement (String name, String friendlyName, String description, String category, String stat, Integer value, Boolean hidden, String message) {
 		this.name = name;
 		this.friendlyName = friendlyName;
+		this.description = description;
 		this.category = category;
 		this.stat = stat;
 		this.value = value;
+		this.hidden = hidden;
 		this.message = message;
 	}
 	
-	public Achievement (String name, String friendlyName, String category, String stat, Integer value) {
+	public Achievement (String name, String friendlyName, String description, String category, String stat, Integer value, Boolean hidden) {
 		this.name = name;
 		this.friendlyName = friendlyName;
+		this.description = description;
 		this.category = category;
 		this.stat = stat;
 		this.value = value;
+		this.hidden = hidden;
 	}
 	
 	public List<Reward> getRewards() {
@@ -60,12 +66,24 @@ public class Achievement {
 		rewards.add(new Reward(false,itemId,value));
 	}
 	
+	public Boolean isHidden() {
+		return this.hidden;
+	}
+	
+	public void setHidden(Boolean hidden) {
+		this.hidden = hidden;
+	}
+	
 	public String getName() {
 		return this.name;
 	}
 	
 	public String getFriendlyName() {
 		return this.friendlyName;
+	}
+	
+	public String getDescription() {
+		return this.description;
 	}
 	
 	public String getCategory() {
@@ -90,6 +108,10 @@ public class Achievement {
 	
 	public void setFriendlyName(String friendlyName) {
 		this.friendlyName = friendlyName;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
 	}
 	
 	public void setCategory(String category) {

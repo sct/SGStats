@@ -1,6 +1,7 @@
 achievements:
     break100blocks:
         friendly-name: Block Breaker
+        description: Break 100 blocks of any type
         category: default
         stat: totalblockdestroy
         value: 100
@@ -9,6 +10,7 @@ achievements:
         - true:0:100
     place25blocks:
         friendly-name: Builder
+        description: Place 25 blocks of any type
         category: default
         stat: totalblockplace
         value: 25

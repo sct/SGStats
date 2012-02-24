@@ -55,6 +55,7 @@ public class SGStats extends JavaPlugin {
 	public static String defaultCategory = "default";
 	public static Boolean debugMode = true;
 	public static SQLite sql;
+	private static Integer interval = 300;
 	
 	public void configDatabase() {
 		PluginDescriptionFile pdf = this.getDescription();
@@ -71,6 +72,8 @@ public class SGStats extends JavaPlugin {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+		} else {
+			// Want MySQL connector here, but should also be using sql var. Cant though, because its from the MySQL object :(
 		}
 	}
 	
@@ -94,14 +97,16 @@ public class SGStats extends JavaPlugin {
 			Achievement achievement = null;
 			for (String aName : aSec.getKeys(false)) {
 				String aFriendly = aSec.getString(aName + ".friendly-name");
+				String aDesc = aSec.getString(aName + ".description");
 				String aCat = aSec.getString(aName + ".category");
 				String aStat = aSec.getString(aName + ".stat");
 				Integer aValue = aSec.getInt(aName + ".value");
+				Boolean aHide = aSec.getBoolean(aName + ".hidden");
 				String aMessage = aSec.getString(aName + ".message");
 				if (aMessage.isEmpty())
-					achievement = new Achievement(aName,aFriendly,aCat,aStat,aValue);
+					achievement = new Achievement(aName,aFriendly,aDesc,aCat,aStat,aValue,aHide);
 				else
-					achievement = new Achievement(aName,aFriendly,aCat,aStat,aValue,aMessage);
+					achievement = new Achievement(aName,aFriendly,aDesc,aCat,aStat,aValue,aHide,aMessage);
 				
 				List<String> rewards = aConfig.getStringList(aName + ".rewards");
 				
@@ -123,7 +128,7 @@ public class SGStats extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		PluginDescriptionFile pdf = this.getDescription();
-		
+		// TODO: Write plugin unloader
 		log.info("[" + pdf.getName() + "] is now disabled!");
 	}
 	
@@ -149,6 +154,23 @@ public class SGStats extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 		getServer().getPluginManager().registerEvents(new EntityListener(this), this);
 		getServer().getPluginManager().registerEvents(new BlockListener(this), this);
+	}
+	
+	public void startScheduler() {
+		getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Runnable() {
+			public void run() {
+				Integer count = 0;
+				if (debugMode == true)
+					log.info("[SGStats] [DEBUG] Save task started...");
+				for (String pName : stats.keySet()) {
+					PlayerStat ps = stats.get(pName);
+					ps.save();
+					count++;
+				}
+				if (debugMode == true)
+					log.info("[SGStats] [DEBUG] Save task finished. Saved " + count + " stats instances.");
+			}
+		}, 300 * 20, interval * 20);
 	}
 	
 	public void updateStat(Player player,String stat) {

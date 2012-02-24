@@ -41,12 +41,10 @@ public class EntityListener implements Listener {
 			Player killer = dd.getKiller();
 			plugin.updateStat(player, "totaldeath");
 			plugin.updateStat(killer, "kill",dd.getDeathType());
-			plugin.getServer().broadcastMessage(player.getName() + " was killed by " + killer.getName());
 			return;
 		}
 		if (dd.getPlayer() != null) {
 			plugin.updateStat(dd.getPlayer(), "totaldeath");
-			plugin.getServer().broadcastMessage("aw shucks, a player died!");
 			return;
 		}
 		
@@ -54,7 +52,6 @@ public class EntityListener implements Listener {
 			Player killer = dd.getKiller();
 			plugin.updateStat(killer,"kill",dd.getDeathType());
 			plugin.updateStat(killer,"totalkill");
-			plugin.getServer().broadcastMessage(killer.getName() + " just killed a " + dd.getDeathType().toString());
 		}
 		
 	}
