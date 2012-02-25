@@ -25,7 +25,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.logging.Logger;
 
 import net.milkbowl.vault.economy.Economy;
@@ -112,6 +111,8 @@ public class SGStats extends JavaPlugin {
 			ConfigurationSection aSec = aConfig.getConfigurationSection("achievements");
 			Achievement achievement = null;
 			for (String aName : aSec.getKeys(false)) {
+				if (debugMode)
+					log.info("[SGStats] [DEBUG] Adding achievement: " + aName);
 				String aFriendly = aSec.getString(aName + ".friendly-name");
 				String aDesc = aSec.getString(aName + ".description");
 				String aCat = aSec.getString(aName + ".category");
@@ -124,14 +125,17 @@ public class SGStats extends JavaPlugin {
 				else
 					achievement = new Achievement(aName,aFriendly,aDesc,aCat,aStat,aValue,aHide,aMessage);
 				
-				List<String> rewards = aConfig.getStringList(aName + ".rewards");
-				
-				for (String reward : rewards) {
+				for (String reward : aSec.getStringList(aName + ".rewards")) {
 					String[] args = reward.split(":");
-					if (args[0] == "false")
+					if (debugMode)
+						log.info("[SGStats] [DEBUG]  - HAS REWARD: " + args[0].toString() + " ID: " + args[1] + " VALUE: " + args[2]);
+					if (args[0].equalsIgnoreCase("false"))
 						achievement.addReward(Integer.valueOf(args[1]), Integer.valueOf(args[2]));
-					else
+					else {
+						if (debugMode)
+							log.info("[SGStats] [DEBUG]  -- Is Economy!");
 						achievement.addReward(true, Integer.valueOf(args[2]));
+					}
 				}
 				achievements.put(aName, achievement);
 			}
@@ -320,6 +324,8 @@ public class SGStats extends JavaPlugin {
 		// Grant rewards
 		Boolean mSent = false;
 		for (Reward reward : ach.getRewards()) {
+			if (debugMode)
+				log.info("[SGStats] [DEBUG] Reward detected: " + reward.isEconomy().toString() + " item id: " + reward.getItemId() + " value: " + reward.getValue());
 			if (useEconomy == true && reward.isEconomy()) {
 				EconomyResponse r = economy.depositPlayer(ps.getPlayer().getName(), reward.getValue());
 				if (r.transactionSuccess())
@@ -327,7 +333,7 @@ public class SGStats extends JavaPlugin {
 			} else {
 				Material mat = Material.getMaterial(reward.getItemId());
 				ItemStack is = new ItemStack(mat,50);
-				ps.getPlayer().setItemInHand(is);
+				ps.getPlayer().getInventory().addItem(is);
 				if (mSent == false) {
 					ps.getPlayer().sendMessage("§5[§6Achievement Reward§5] You have been rewarded with items!");
 					mSent = true;

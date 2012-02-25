@@ -2,6 +2,7 @@ name: SGStats
 main: com.sgcraft.sgstats.SGStats
 author: SGCraft
 version: 0.1
+depend: [Vault]
 commands:
   achv:
     description: View achievements

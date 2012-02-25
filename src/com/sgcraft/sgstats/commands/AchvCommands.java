@@ -130,7 +130,7 @@ public class AchvCommands implements CommandExecutor {
 			}
 		}
 		Integer totalPage = (int) Math.ceil((float) aList.size() / 5);
-		for (x = currentIndex;x <= (currentIndex + 5);x++) {
+		for (x = currentIndex;x <= (currentIndex + 4);x++) {
 			try {
 				Achievement achv = aList.get(x);
 				if (achv.isHidden() && !checkPerm(player,"admin.hidden"))
