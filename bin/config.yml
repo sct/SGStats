@@ -1,4 +1,5 @@
 default:
+    use-economy: true
     use-mysql: false
     mysql-hostname: localhost
     mysql-port: 3306

@@ -3,6 +3,6 @@ main: com.sgcraft.sgstats.SGStats
 author: SGCraft
 version: 0.1
 commands:
-  stats:
-    description: View stats and configure
+  achv:
+    description: View achievements
     usage: /<command> <help>

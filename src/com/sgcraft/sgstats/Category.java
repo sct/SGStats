@@ -42,7 +42,11 @@ public class Category {
 	}
 	
 	public int get(String stat) {
-		int value = stats.get(stat);
+		int value;
+		if (stats.containsKey(stat))
+			value = stats.get(stat);
+		else
+			value = 0;
 		return value;
 	}
 	

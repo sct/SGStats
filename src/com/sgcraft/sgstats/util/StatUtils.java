@@ -21,7 +21,7 @@ import org.bukkit.entity.Blaze;
 import org.bukkit.entity.CaveSpider;
 import org.bukkit.entity.Chicken;
 import org.bukkit.entity.Cow;
-import org.bukkit.entity.CreatureType;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Enderman;
@@ -45,53 +45,53 @@ import org.bukkit.entity.Zombie;
 
 public class StatUtils {
 	
-	public static CreatureType getCreatureType(Entity entity) {
+	public static EntityType getEntityType(Entity entity) {
 		if (entity instanceof Creeper)
-			return CreatureType.CREEPER;
+			return EntityType.CREEPER;
 		if (entity instanceof Skeleton)
-			return CreatureType.SKELETON;
+			return EntityType.SKELETON;
 		if (entity instanceof Spider)
-			return CreatureType.SPIDER;
+			return EntityType.SPIDER;
 		if (entity instanceof Zombie)
-			return CreatureType.ZOMBIE;
+			return EntityType.ZOMBIE;
 		if (entity instanceof Giant)
-			return CreatureType.GIANT;
+			return EntityType.GIANT;
 		if (entity instanceof Slime)
-			return CreatureType.SLIME;
+			return EntityType.SLIME;
 		if (entity instanceof Ghast)
-			return CreatureType.GHAST;
+			return EntityType.GHAST;
 		if (entity instanceof PigZombie)
-			return CreatureType.PIG_ZOMBIE;
+			return EntityType.PIG_ZOMBIE;
 		if (entity instanceof Enderman)
-			return CreatureType.ENDERMAN;
+			return EntityType.ENDERMAN;
 		if (entity instanceof CaveSpider)
-			return CreatureType.CAVE_SPIDER;
+			return EntityType.CAVE_SPIDER;
 		if (entity instanceof Silverfish)
-			return CreatureType.SILVERFISH;
+			return EntityType.SILVERFISH;
 		if (entity instanceof Blaze)
-			return CreatureType.BLAZE;
+			return EntityType.BLAZE;
 		if (entity instanceof MagmaCube)
-			return CreatureType.MAGMA_CUBE;
+			return EntityType.MAGMA_CUBE;
 		if (entity instanceof EnderDragon)
-			return CreatureType.ENDER_DRAGON;
+			return EntityType.ENDER_DRAGON;
 		if (entity instanceof Pig)
-			return CreatureType.PIG;
+			return EntityType.PIG;
 		if (entity instanceof Sheep)
-			return CreatureType.SHEEP;
+			return EntityType.SHEEP;
 		if (entity instanceof Chicken)
-			return CreatureType.CHICKEN;
+			return EntityType.CHICKEN;
 		if (entity instanceof Cow)
-			return CreatureType.COW;
+			return EntityType.COW;
 		if (entity instanceof Squid)
-			return CreatureType.SQUID;
+			return EntityType.SQUID;
 		if (entity instanceof Wolf)
-			return CreatureType.WOLF;
+			return EntityType.WOLF;
 		if (entity instanceof MushroomCow)
-			return CreatureType.MUSHROOM_COW;
+			return EntityType.MUSHROOM_COW;
 		if (entity instanceof Snowman)
-			return CreatureType.SNOWMAN;
+			return EntityType.SNOWMAN;
 		if (entity instanceof Villager)
-			return CreatureType.VILLAGER;
+			return EntityType.VILLAGER;
 		
 		return null;
 	}

@@ -51,7 +51,7 @@ public class DeathDetail {
 					isCreature = true;
 					setKiller((Player) damager);
 					try {
-						deathType = DeathEventType.valueOf(StatUtils.getCreatureType(e).toString());
+						deathType = DeathEventType.valueOf(StatUtils.getEntityType(e).toString());
 					} catch (IllegalArgumentException ex) {
 						deathType = DeathEventType.UNKNOWN;
 					}

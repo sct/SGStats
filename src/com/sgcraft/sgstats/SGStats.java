@@ -24,18 +24,26 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.economy.EconomyResponse;
+import net.milkbowl.vault.permission.Permission;
+
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.sgcraft.sgstats.commands.StatCommands;
+import com.sgcraft.sgstats.commands.AchvCommands;
 import com.sgcraft.sgstats.listeners.BlockListener;
 import com.sgcraft.sgstats.listeners.EntityListener;
 import com.sgcraft.sgstats.listeners.PlayerListener;
@@ -47,10 +55,13 @@ public class SGStats extends JavaPlugin {
 	public static SGStats plugin;
 	public final Logger log = Logger.getLogger("Minecraft");
 	public static HashMap<String,PlayerStat> stats = new HashMap<String,PlayerStat>();
-	public static HashMap<String,Achievement> achievements = new HashMap<String,Achievement>();
+	public static LinkedHashMap<String,Achievement> achievements = new LinkedHashMap<String,Achievement>();
 	public static FileConfiguration config;
 	public static FileConfiguration aConfig;
 	static File aConfigFile = null;
+	public static Permission permission = null;
+	public static Economy economy = null;
+	public static Boolean useEconomy = false;
 	public static String defaultCategory = "default";
 	public static Boolean debugMode = true;
 	public static PrepareSQL sql;
@@ -144,6 +155,8 @@ public class SGStats extends JavaPlugin {
         config.options().copyDefaults(true);
 		saveConfig();
 		configDatabase();
+		setupPermissions();
+		setupEconomy();
 		startListeners();
 		addCommands();
 		addAchievements();
@@ -159,7 +172,7 @@ public class SGStats extends JavaPlugin {
 	}
 	
 	private void addCommands() {
-		getCommand("stats").setExecutor(new StatCommands(this));
+		getCommand("achv").setExecutor(new AchvCommands(this));
 	}
 	
 	public void startListeners() {
@@ -176,6 +189,30 @@ public class SGStats extends JavaPlugin {
 		}, 300 * 20, interval * 20);
 	}
 	
+	private Boolean setupPermissions()
+    {
+        RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+        if (permissionProvider != null) {
+            permission = permissionProvider.getProvider();
+        }
+        return (permission != null);
+    }
+	
+	private Boolean setupEconomy()
+    {
+		if (config.getBoolean("default.use-economy")) {
+			useEconomy = true;
+	        RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+	        if (economyProvider != null) {
+	            economy = economyProvider.getProvider();
+	        }
+	
+	        return (economy != null);
+		} else {
+			return false;
+		}
+    }
+	
 	public void saveTask() {
 		saveTask(false);
 	}
@@ -186,8 +223,10 @@ public class SGStats extends JavaPlugin {
 			log.info("[SGStats] [DEBUG] Save task started...");
 		for (String pName : stats.keySet()) {
 			PlayerStat ps = stats.get(pName);
-			if (unload)
-				unload(ps.getPlayer());
+			ps.save();
+			if (unload) {
+				stats.remove(pName);
+			}
 			count++;
 		}
 		if (debugMode == true)
@@ -276,6 +315,25 @@ public class SGStats extends JavaPlugin {
 			broadcastMessage = broadcastMessage.replace("#player#",ps.getPlayer().getName());
 			broadcastMessage = broadcastMessage.replace("#name#", ach.getFriendlyName());
 			getServer().broadcastMessage(StatUtils.replaceColors(broadcastMessage));
+		}
+		
+		// Grant rewards
+		Boolean mSent = false;
+		for (Reward reward : ach.getRewards()) {
+			if (useEconomy == true && reward.isEconomy()) {
+				EconomyResponse r = economy.depositPlayer(ps.getPlayer().getName(), reward.getValue());
+				if (r.transactionSuccess())
+					ps.getPlayer().sendMessage(String.format("§5[§6Achievement Reward§5] You have been rewarded with %s",economy.format(r.amount)));
+			} else {
+				Material mat = Material.getMaterial(reward.getItemId());
+				ItemStack is = new ItemStack(mat,50);
+				ps.getPlayer().setItemInHand(is);
+				if (mSent == false) {
+					ps.getPlayer().sendMessage("§5[§6Achievement Reward§5] You have been rewarded with items!");
+					mSent = true;
+				}
+				
+			}
 		}
 		
 		updateStat(ps.getPlayer().getName(),ach);

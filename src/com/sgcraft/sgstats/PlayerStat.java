@@ -64,7 +64,10 @@ public class PlayerStat {
 	}
 	
 	public Category get(String name) {
-		return categories.get(name);
+		if (categories.containsKey(name))
+			return categories.get(name);
+		else
+			return null;
 	}
 	
 	public void save() {
