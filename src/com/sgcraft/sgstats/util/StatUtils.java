@@ -52,6 +52,8 @@ public class StatUtils {
 			return CreatureType.SKELETON;
 		if (entity instanceof Spider)
 			return CreatureType.SPIDER;
+		if (entity instanceof PigZombie)
+			return CreatureType.PIG_ZOMBIE;
 		if (entity instanceof Zombie)
 			return CreatureType.ZOMBIE;
 		if (entity instanceof Giant)
@@ -60,8 +62,6 @@ public class StatUtils {
 			return CreatureType.SLIME;
 		if (entity instanceof Ghast)
 			return CreatureType.GHAST;
-		if (entity instanceof PigZombie)
-			return CreatureType.PIG_ZOMBIE;
 		if (entity instanceof Enderman)
 			return CreatureType.ENDERMAN;
 		if (entity instanceof CaveSpider)

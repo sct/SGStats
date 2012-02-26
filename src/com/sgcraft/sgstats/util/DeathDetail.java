@@ -17,8 +17,8 @@
  */
 package com.sgcraft.sgstats.util;
 
-import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -43,7 +43,7 @@ public class DeathDetail {
 					setDamageType(DeathEventType.PVP);
 				}
 			}
-		} else if (e instanceof Creature) {
+		} else if (e instanceof LivingEntity) {
 			EntityDamageEvent damageEvent = event.getEntity().getLastDamageCause();
 			if (damageEvent instanceof EntityDamageByEntityEvent) {
 				Entity damager = ((EntityDamageByEntityEvent) damageEvent).getDamager();

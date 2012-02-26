@@ -43,6 +43,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sgcraft.sgstats.commands.AchvCommands;
+import com.sgcraft.sgstats.commands.StatCommands;
 import com.sgcraft.sgstats.listeners.BlockListener;
 import com.sgcraft.sgstats.listeners.EntityListener;
 import com.sgcraft.sgstats.listeners.PlayerListener;
@@ -62,7 +63,7 @@ public class SGStats extends JavaPlugin {
 	public static Economy economy = null;
 	public static Boolean useEconomy = false;
 	public static String defaultCategory = "default";
-	public static Boolean debugMode = true;
+	public static Boolean debugMode = false;
 	public static PrepareSQL sql;
 	private static Integer interval = 300;
 	
@@ -94,9 +95,12 @@ public class SGStats extends JavaPlugin {
 	
 	public void addAchievements() {
 		try {
+			Boolean firstCreate = false;
 			aConfigFile = new File(this.getDataFolder(),"achievements.yml");
-			if (!aConfigFile.exists())
+			if (!aConfigFile.exists()) {
 				aConfigFile.createNewFile();
+				firstCreate = true;
+			}
 			
 			aConfig = YamlConfiguration.loadConfiguration(aConfigFile);
 			InputStream defConfigStream = getResource("achievements.yml");
@@ -104,8 +108,8 @@ public class SGStats extends JavaPlugin {
 				YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
 				aConfig.setDefaults(defConfig);
 			}
-			
-			aConfig.options().copyDefaults(true);
+			if (firstCreate)
+				aConfig.options().copyDefaults(true);
 			aConfig.save(aConfigFile);
 			
 			ConfigurationSection aSec = aConfig.getConfigurationSection("achievements");
@@ -148,7 +152,6 @@ public class SGStats extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		PluginDescriptionFile pdf = this.getDescription();
-		saveTask(true);
 		log.info("[" + pdf.getName() + "] is now disabled!");
 	}
 	
@@ -177,6 +180,7 @@ public class SGStats extends JavaPlugin {
 	
 	private void addCommands() {
 		getCommand("achv").setExecutor(new AchvCommands(this));
+		getCommand("stat").setExecutor(new StatCommands(this));
 	}
 	
 	public void startListeners() {
@@ -343,6 +347,7 @@ public class SGStats extends JavaPlugin {
 		}
 		
 		updateStat(ps.getPlayer().getName(),ach);
+		updateStat(ps.getPlayer(),"totalachievements");
 		ps.save();
 	}
 	

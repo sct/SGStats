@@ -7,3 +7,6 @@ commands:
   achv:
     description: View achievements
     usage: /<command> <help>
+  stat:
+    description: View your stats
+    usage: /<command> <help>

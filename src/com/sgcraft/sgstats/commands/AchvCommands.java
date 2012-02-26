@@ -57,7 +57,7 @@ public class AchvCommands implements CommandExecutor {
 		}
 	}
 	
-	/*
+	
 	private boolean checkPerm(Player player, String perm, Boolean noerror) {
 		if (player.isOp() || player.hasPermission(pluginName.toLowerCase() + "." + perm.toLowerCase()))
 			return true;
@@ -65,7 +65,7 @@ public class AchvCommands implements CommandExecutor {
 			return false;
 		}
 	}
-	*/
+	
 	
 	private void sendErr(Player player, String msg) {
 		msg = "§c" + msg;
@@ -133,12 +133,16 @@ public class AchvCommands implements CommandExecutor {
 		for (x = currentIndex;x <= (currentIndex + 4);x++) {
 			try {
 				Achievement achv = aList.get(x);
-				if (achv.isHidden() && !checkPerm(player,"admin.hidden"))
-					continue;
+				String achName = achv.getFriendlyName();
+				String achDesc = achv.getDescription();
+				if (achv.isHidden() && isPlayer == false && !checkPerm(player,"admin.hidden",true)) {
+					achName = "<Hidden>";
+					achDesc = "???";
+				}
 				if (cat != null && cat.contains(achv.getName()))
-					sender.sendMessage("  §3" + achv.getFriendlyName() + " - §7" + achv.getDescription());
+					sender.sendMessage("  §3" + achName + " - §7" + achDesc);
 				else
-					sender.sendMessage("  §8" + achv.getFriendlyName() + " - §7" + achv.getDescription());
+					sender.sendMessage("  §8" + achName + " - §7" + achDesc);
 			} catch (IndexOutOfBoundsException e) {
 				// Skip missing rows
 			}
