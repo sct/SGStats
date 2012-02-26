@@ -74,9 +74,9 @@ public class SGStats extends JavaPlugin {
 		conn = sql.getConnection();
 		try {
 			if (PrepareSQL.isMysql())
-				ps = conn.prepareStatement("CREATE TABLE if not exists player_stats (player VARCHAR(255) NOT NULL,category VARCHAR(255) NOT NULL,stat VARCHAR(255) NOT NULL DEFAULT '-',value INT(11) NOT NULL DEFAULT 0);");
+				ps = conn.prepareStatement("CREATE TABLE if not exists player_stats (player VARCHAR(255) NOT NULL,category VARCHAR(255) NOT NULL,stat VARCHAR(255) NOT NULL DEFAULT '-',value INT(11) NOT NULL DEFAULT 0, PRIMARY KEY (player,category,stat));");
 			else
-				ps = conn.prepareStatement("CREATE TABLE if not exists player_stats (player TEXT NOT NULL,category TEXT NOT NULL,stat TEXT NOT NULL DEFAULT '-',value INTEGER NOT NULL DEFAULT 0);");
+				ps = conn.prepareStatement("CREATE TABLE if not exists player_stats (player TEXT NOT NULL,category TEXT NOT NULL,stat TEXT NOT NULL DEFAULT '-',value INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (player,category,stat));");
 			ps.executeUpdate();
 			ps.close();
 			conn.close();
@@ -225,12 +225,33 @@ public class SGStats extends JavaPlugin {
 		saveTask(false);
 	}
 	
+	public void updateIntervalStats(PlayerStat ps) {
+		if (PlayerListener.travel.containsKey(ps.getPlayer().getName())) {
+			int walked = (int) Math.floor(PlayerListener.travel.get(ps.getPlayer().getName()));
+			if (walked >= 1) {
+				updateStat(ps.getPlayer().getName(),"travel","walk",walked);
+				PlayerListener.travel.put(ps.getPlayer().getName(), 0.0f);
+			}
+		}
+		
+		if (PlayerListener.playertime.containsKey(ps.getPlayer().getName())) {
+			int now = (int) ( System.currentTimeMillis() / 1000L);
+			int then = PlayerListener.playertime.get(ps.getPlayer().getName());
+			int increment = now - then;
+			if (increment >= 1) {
+				updateStat(ps.getPlayer(),"playtime",increment);
+				PlayerListener.playertime.put(ps.getPlayer().getName(), now);
+			}
+		}
+	}
+	
 	public void saveTask(Boolean unload) {
 		Integer count = 0;
 		if (debugMode == true)
 			log.info("[SGStats] [DEBUG] Save task started...");
 		for (String pName : stats.keySet()) {
 			PlayerStat ps = stats.get(pName);
+			updateIntervalStats(ps);
 			ps.save();
 			if (unload) {
 				stats.remove(pName);
@@ -378,6 +399,7 @@ public class SGStats extends JavaPlugin {
 	public void unload(Player player) {
 		if (stats.containsKey(player.getName())) {
 			PlayerStat ps = stats.get(player.getName());
+			updateIntervalStats(ps);
 			ps.save();
 			stats.remove(player.getName());
 		}
